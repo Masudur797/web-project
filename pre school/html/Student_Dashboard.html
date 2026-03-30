@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Student Dashboard</title>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../css/Student_Dashboard.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">
+            <a href="../View/Student_Dashboard.html" class="logo-link">
+                <img src="../images/logo.png" alt="Logo" class="logo-img">
+            </a>
+            <span class="brand-title"> STUDENT - PORTAL</span>
+        </div>
+
+        <div class="top-actions">
+            <span class="greeting">Hi, Student</span>
+            <button class="btn" onclick="location.href='../php/Login.php'">Log out</button>
+        </div>
+    </header>
+
+    <div class="layout">
+        <div class="left-ops">
+            <div class="ops-card">
+                <h3>Quick Actions</h3>
+                <button class="op-btn">Submit Assignment</button>
+                <button class="op-btn">Submit Homework</button>
+                <button class="op-btn">View Exam Schedule</button>
+                <button class="op-btn">View Grades</button>
+                <button class="op-btn">Messages</button>
+                <button class="op-btn">Profile</button>
+            </div>
+        </div>
+
+        <main class="center-routine">
+            <h1>Class Routine</h1>
+
+            <section class="timetable-panel">
+                <div class="tt-header">
+                    <div class="tt-cell time-col">Time</div>
+                    <div class="tt-cell">Monday</div>
+                    <div class="tt-cell">Tuesday</div>
+                    <div class="tt-cell">Wednesday</div>
+                    <div class="tt-cell">Thursday</div>
+                    <div class="tt-cell">Friday</div>
+                </div>
+
+                <!-- Updated periods with new subjects -->
+                <div class="tt-row">
+                    <div class="tt-cell time-col">08:00 - 08:45</div>
+                    <div class="tt-cell">Math</div>
+                    <div class="tt-cell">Science</div>
+                    <div class="tt-cell">Music</div>
+                    <div class="tt-cell">Drawing</div>
+                    <div class="tt-cell">Sports</div>
+                </div>
+
+                <div class="tt-row">
+                    <div class="tt-cell time-col">08:50 - 09:35</div>
+                    <div class="tt-cell">History</div>
+                    <div class="tt-cell">Math</div>
+                    <div class="tt-cell">Nature</div>
+                    <div class="tt-cell">Science</div>
+                    <div class="tt-cell">Music</div>
+                </div>
+
+                <div class="tt-row">
+                    <div class="tt-cell time-col">09:50 - 10:35</div>
+                    <div class="tt-cell">Sports</div>
+                    <div class="tt-cell">Drawing</div>
+                    <div class="tt-cell">Math</div>
+                    <div class="tt-cell">History</div>
+                    <div class="tt-cell">Science</div>
+                </div>
+
+                <div class="tt-row">
+                    <div class="tt-cell time-col">10:45 - 11:30</div>
+                    <div class="tt-cell">Nature</div>
+                    <div class="tt-cell">Music</div>
+                    <div class="tt-cell">Science</div>
+                    <div class="tt-cell">Math</div>
+                    <div class="tt-cell">Drawing</div>
+                </div>
+
+                <div class="tt-row">
+                    <div class="tt-cell time-col">11:40 - 12:25</div>
+                    <div class="tt-cell">Sports</div>
+                    <div class="tt-cell">History</div>
+                    <div class="tt-cell">Nature</div>
+                    <div class="tt-cell">Music</div>
+                    <div class="tt-cell">Free Period</div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>

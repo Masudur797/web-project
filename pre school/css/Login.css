@@ -1,0 +1,114 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: url(../images/pic3.jpg);
+  font-family: Arial, sans-serif;
+}
+
+.login {
+  display: flex;
+  width: 25%;
+  background: #f6edfc;
+  border: 1px solid #d8b0ee;
+  border-radius: 12px;
+  padding: 30px;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.show-pass {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.show-pass input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.logo {
+  display: flex;
+  width: 100px;
+  height: 100px;
+  margin-right: 10px;
+}
+
+.title1 {
+  display: flex;
+  padding-top: 14px;
+  padding-left: 4px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #422b93;
+}
+
+.title2 {
+  display: flex;
+  padding-top: 5px;
+  padding-left: 4px;
+  font-size: 17px;
+  font-weight: bold;
+  color: #256176;
+  text-align: center;
+}
+
+
+a {
+  text-decoration: none;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: 0.3s;
+}
+
+input:focus {
+  border-color: #256176;
+  outline: none;
+  box-shadow: 0 0 4px rgba(37, 97, 118, 0.3);
+}
+
+.login-btn {
+  height: 48px;
+  border-radius: 8px;
+  background: #2f1d92;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+  background: #534be8;
+  box-shadow: black;
+}
+
+.login-text {
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+}

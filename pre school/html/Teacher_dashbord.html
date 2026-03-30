@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/css/Teacher_Dashboard.css">
+
+  <script>
+    function goTo(section) {
+      const el = document.getElementById(section);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }
+  </script>
+</head>
+<body>
+  <!-- Top Header -->
+  <header>
+    <nav class="nav_bar">
+      <div class="brand">
+        <a href="../View/Teacher_Dashboard.html" class="logo-link">
+          <img src="/images/logo.png" alt="School Logo" class="logo-img">
+        </a>
+        <span class="brand-title">School Portal - Teacher</span>
+      </div>
+      <div class="top-actions">
+        <span class="greeting">Hello, Teacher </span>
+        <button class="btn" onclick="location.href='../View/Login.html'">Log out</button>
+      </div>
+    </nav>
+  </header>
+
+  <section class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li><a href="#" onclick="goTo('routine')">Routine</a></li>
+          <li><a href="#" onclick="goTo('classes')">My Classes</a></li>
+          <li><a href="#" onclick="goTo('assignments')">Assignments</a></li>
+          <li><a href="#" onclick="goTo('grades')">Grades</a></li>
+          <li><a href="#" onclick="goTo('exam')">Exams</a></li>
+          <li><a href="#" onclick="goTo('Profile')">Profile</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="content">
+      <h1>My Dashboard</h1>
+
+      <!-- Routine Section -->
+      <section class="routine" id="routine">
+         <h2>Class Routine</h2>
+    <table class="routine-table">
+        <thead>
+            <tr>
+                <th>Day</th>
+                <th>8:00 - 9:00</th>
+                <th>9:00 - 10:00</th>
+                <th>10:00 - 11:00</th>
+                <th>11:00 - 12:00</th>
+                <th>12:00 - 1:00</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Sunday</td>
+                <td>Class 1 - History</td>
+                <td>Class 2 - Music</td>
+                <td>Class 1 - History</td>
+                <td>Class 2 - Music</td>
+                <td>Meeting</td>
+            </tr>
+            <tr>
+                <td>Monday</td>
+                <td>Class 2 - History</td>
+                <td>Class 1 - Music</td>
+                <td>Class 2 - History</td>
+                <td>Class 1 - Music</td>
+                <td>Free</td>
+            </tr>
+            <tr>
+                <td>Tuesday</td>
+                <td>Class 1 - History</td>
+                <td>Class 2 - Music</td>
+                <td>Class 1 - History</td>
+                <td>Class 2 - Music</td>
+                <td>Meeting</td>
+            </tr>
+            <tr>
+                <td>Wednesday</td>
+                <td>Class 2 - History</td>
+                <td>Class 1 - Music</td>
+                <td>Class 2 - History</td>
+                <td>Class 1 - Music</td>
+                <td>Free</td>
+            </tr>
+            <tr>
+                <td>Thursday</td>
+                <td>Class 1 - History</td>
+                <td>Class 2 - Music</td>
+                <td>Class 1 - History</td>
+                <td>Class 2 - Music</td>
+                <td>Department Meeting</td>
+            </tr>
+        </tbody>
+    </table>
+      </section>
+
+     
+
+     <!-- Profile -->
+<section class="panel" id="profile">
+  <h2>Profile</h2>
+  <div class="profile-card">
+    <img src="/images/profile.jpg" alt="Teacher Photo" class="profile-img">
+
+    <div class="profile-info">
+      <p><strong>Name:</strong> John Doe</p>
+      <p><strong>Email:</strong> johndoe@example.com</p>
+      <p><strong>Phone:</strong> +880 1234-567890</p>
+      <p><strong>Subject:</strong> History</p>
+      <p><strong>Department:</strong> Humanities</p>
+
+      <button class="btn small">Edit Profile</button>
+      <button class="btn small">Change Password</button>
+    </div>
+    
+  </div>
+</section>
+
+       <!-- Classes -->
+      <section class="panel" id="classes">
+        <h2>Classes</h2>
+        <ul>
+          <li>Grade 1 - History</li>
+          <li>Grade 2 - Music</li>
+        </ul>
+      </section>
+
+      <!-- Assignments -->
+      <section class="panel" id="assignments">
+        <h2>Assignments</h2>
+        <button class="btn small">Create Assignment</button>
+        <ul>
+          <li>Chapter 5 Homework - due 2025-09-20</li>
+          <li>Lab Report - due 2025-09-27</li>
+        </ul>
+      </section>
+
+      <!-- Grades -->
+      <section class="panel" id="grades">
+        <h2>Grades</h2>
+        <p>Upload grades or view student submissions.</p>
+      </section>
+
+      <!-- Exams -->
+      <section class="panel" id="exam">
+        <h2>Exams</h2>
+        <p>Schedule exams and add questions.</p>
+      </section>
+    </main>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    © 2025 School Management System
+  </footer>
+</body>
+</html>

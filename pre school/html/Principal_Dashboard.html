@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Principal Dashboard</title>
+     <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="../CSS/Principal_Dashboard.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="logo">
+            <a href="../View/Principal_Dashboard.html">
+                <img src="../images/logo.png" alt="Logo" class="logo-img">
+            </a>
+            <span class="title">DASHBOARD - PRINCIPAL</span>
+        </div>
+
+        <div class="action">
+            <span class="msg">Welcome, Principal</span>
+            <button class="btn" onclick="location.href='../PHP/Login.php'">Log out</button>
+        </div>
+    </header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="menu-links">
+                <div class="menu-item"><a href="../View/Principal_Dashboard.html">Dashboard</a></div>
+                <div class="menu-item"><a href="../PHP/Teacher_Registration.php">Add Teachers</a></div>
+                <div class="menu-item"><a href="">Add Students</a></div>  
+                <div class="menu-item"><a href="">Courses</a></div>
+                <div class="menu-item"><a href="">Exams</a></div>
+                <div class="menu-item"><a href="">Assignments</a></div>
+                <div class="menu-item"><a href="">Update Password</a></div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <h1>Overview</h1>
+            <div class="cards">
+                <div class="card">
+                    <h3>Total Teachers</h3>
+                    <p class="stat">24</p>
+                </div>
+                <div class="card">
+                    <h3>Total Students</h3>
+                    <p class="stat">842</p>
+                </div>
+                <div class="card">
+                    <h3>Active Classes</h3>
+                    <p class="stat">3</p>
+                </div>
+            </div>
+
+            <section class="panel" id="recent">
+                <h2>Recent Activity</h2>
+                <ul>
+                    <li>Teacher John uploaded grades for Grade 10.</li>
+                    <li>New course "Environmental Science" was added.</li>
+                    <li>Exam schedule for Spring posted.</li>
+                </ul>
+            </section>
+
+            <section class="panel" id="announcements">
+                <h2>Announcements</h2>
+                <p>No new announcements.</p>
+            </section>
+        </main>
+    </div>
+</body>
+</html>
