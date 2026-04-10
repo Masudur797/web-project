@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Snake Game</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: sans-serif;
+      background: #f5f5f2;
+      color: #2C2C2A;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body { background: #1a1a1a; color: #e0e0e0; }
+      button { background: #2a2a2a; color: #e0e0e0; border-color: #444; }
+      button:hover { background: #333; }
+      #canvas { border-color: #444; }
+    }
+
+    #game-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 2rem;
+    }
+
+    h1 { font-size: 22px; font-weight: 500; letter-spacing: 1px; }
+
+    #score-bar { display: flex; gap: 32px; font-size: 14px; color: #888; }
+    #score-bar span { font-weight: 500; font-size: 20px; color: #2C2C2A; }
+
+    @media (prefers-color-scheme: dark) {
+      #score-bar span { color: #e0e0e0; }
+    }
+
+    #canvas { border: 1px solid #ccc; border-radius: 8px; background: #eee; display: block; }
+    #msg { font-size: 14px; color: #888; min-height: 20px; }
+    #controls { display: flex; gap: 10px; }
+
+    button {
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      color: #2C2C2A;
+      border-radius: 8px;
+      padding: 8px 20px;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    button:hover { background: #f0f0ee; }
+    button:active { transform: scale(0.97); }
+
+    #dpad {
+      display: grid;
+      grid-template-columns: repeat(3, 48px);
+      grid-template-rows: repeat(3, 48px);
+      gap: 4px;
+    }
+    #dpad button { width: 48px; height: 48px; padding: 0; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div id="game-wrap">
+    <h1>🐍 Snake Game</h1>
+    <div id="score-bar">
+      Score: <span id="score">0</span>
+      &nbsp;&nbsp;
+      Higest: <span id="hi">0</span>
+    </div>
+    <canvas id="canvas" width="320" height="320"></canvas>
+    <div id="msg">start</div>
+    <div id="controls">
+      <button id="btnStart">▶ Start</button>
+      <button id="btnPause">⏸ Pause</button>
+    </div>
+    <div id="dpad">
+      <div></div>
+      <button id="up">▲</button>
+      <div></div>
+      <button id="left">◀</button>
+      <div></div>
+      <button id="right">▶</button>
+      <div></div>
+      <button id="down">▼</button>
+      <div></div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const COLS = 16, ROWS = 16, SZ = 20;
+    let snake, dir, nextDir, food, score, hiScore = 0;
+    let running = false, paused = false, loop;
+
+    function isDark() {
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+
+    function colors() {
+      return {
+        head: isDark() ? '#9FE1CB' : '#0F6E56',
+        body: isDark() ? '#5DCAA5' : '#1D9E75',
+        food: isDark() ? '#F0997B' : '#D85A30',
+        stem: isDark() ? '#FA9F75' : '#993C1D',
+        grid: isDark() ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+        bg:   isDark() ? '#1e1e1e' : '#f5f5f2',
+      };
+    }
+
+    function rand(max) { return Math.floor(Math.random() * max); }
+
+    function placeFood() {
+      let pos;
+      do { pos = { x: rand(COLS), y: rand(ROWS) }; }
+      while (snake.some(s => s.x === pos.x && s.y === pos.y));
+      food = pos;
+    }
+
+    function init() {
+      snake = [{ x: 8, y: 8 }, { x: 7, y: 8 }, { x: 6, y: 8 }];
+      dir = { x: 1, y: 0 };
+      nextDir = { x: 1, y: 0 };
+      score = 0;
+      document.getElementById('score').textContent = 0;
+      placeFood();
+      draw();
+    }
+
+    function draw() {
+      const c = colors();
+      ctx.fillStyle = c.bg;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = c.grid;
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i <= COLS; i++) {
+        ctx.beginPath(); ctx.moveTo(i*SZ, 0); ctx.lineTo(i*SZ, canvas.height); ctx.stroke();
+      }
+      for (let j = 0; j <= ROWS; j++) {
+        ctx.beginPath(); ctx.moveTo(0, j*SZ); ctx.lineTo(canvas.width, j*SZ); ctx.stroke();
+      }
+
+      snake.forEach((s, i) => {
+        ctx.fillStyle = i === 0 ? c.head : c.body;
+        ctx.beginPath();
+        ctx.roundRect(s.x*SZ+1, s.y*SZ+1, SZ-2, SZ-2, i === 0 ? 6 : 4);
+        ctx.fill();
+        if (i === 0) {
+          const ex = dir.x === 1 ? SZ-6 : dir.x === -1 ? 4 : SZ/2;
+          const ey1 = dir.y === 0 ? SZ*0.35 : dir.y === 1 ? SZ-7 : 5;
+          const ey2 = dir.y === 0 ? SZ*0.65 : dir.y === 1 ? SZ-7 : 5;
+          ctx.fillStyle = c.bg;
+          ctx.beginPath(); ctx.arc(s.x*SZ+ex, s.y*SZ+ey1, 2, 0, Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.arc(s.x*SZ+(dir.y !== 0 ? SZ-ex : ex), s.y*SZ+ey2, 2, 0, Math.PI*2); ctx.fill();
+        }
+      });
+
+      ctx.fillStyle = c.food;
+      ctx.beginPath();
+      ctx.arc(food.x*SZ+SZ/2, food.y*SZ+SZ/2, SZ/2-2, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = c.stem;
+      ctx.beginPath(); ctx.arc(food.x*SZ+SZ/2+3, food.y*SZ+4, 2, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = c.stem;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(food.x*SZ+SZ/2+3, food.y*SZ+4);
+      ctx.quadraticCurveTo(food.x*SZ+SZ/2+7, food.y*SZ, food.x*SZ+SZ/2+2, food.y*SZ-3);
+      ctx.stroke();
+    }
+
+    function step() {
+      dir = { ...nextDir };
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      if (head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS ||
+          snake.some(s => s.x === head.x && s.y === head.y)) {
+        gameOver(); return;
+      }
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        document.getElementById('score').textContent = score;
+        if (score > hiScore) { hiScore = score; document.getElementById('hi').textContent = hiScore; }
+        placeFood();
+      } else { snake.pop(); }
+      draw();
+    }
+
+    function gameOver() {
+      running = false; clearInterval(loop);
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#fff';
+      ctx.font = '500 22px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('Game Over!', canvas.width/2, canvas.height/2 - 16);
+      ctx.font = '400 15px sans-serif';
+      ctx.fillText('Score: ' + score, canvas.width/2, canvas.height/2 + 14);
+      document.getElementById('msg').textContent = 'if you want to play again pressed start';
+    }
+
+    function startGame() {
+      if (running) clearInterval(loop);
+      init(); running = true; paused = false;
+      loop = setInterval(step, 130);
+      document.getElementById('msg').textContent = 'Arrow key ';
+    }
+
+    function togglePause() {
+      if (!running) return;
+      paused = !paused;
+      if (paused) { clearInterval(loop); document.getElementById('msg').textContent = '⏸ Break'; }
+      else { loop = setInterval(step, 130); document.getElementById('msg').textContent = ''; }
+    }
+
+    document.getElementById('btnStart').onclick = startGame;
+    document.getElementById('btnPause').onclick = togglePause;
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp'    && dir.y !== 1)  { nextDir = { x: 0,  y: -1 }; e.preventDefault(); }
+      if (e.key === 'ArrowDown'  && dir.y !== -1) { nextDir = { x: 0,  y:  1 }; e.preventDefault(); }
+      if (e.key === 'ArrowLeft'  && dir.x !== 1)  { nextDir = { x: -1, y:  0 }; e.preventDefault(); }
+      if (e.key === 'ArrowRight' && dir.x !== -1) { nextDir = { x: 1,  y:  0 }; e.preventDefault(); }
+    });
+
+    document.getElementById('up').onclick    = () => { if (dir.y !== 1)  nextDir = { x: 0,  y: -1 }; };
+    document.getElementById('down').onclick  = () => { if (dir.y !== -1) nextDir = { x: 0,  y:  1 }; };
+    document.getElementById('left').onclick  = () => { if (dir.x !== 1)  nextDir = { x: -1, y:  0 }; };
+    document.getElementById('right').onclick = () => { if (dir.x !== -1) nextDir = { x: 1,  y:  0 }; };
+
+    init();
+  </script>
+</body>
+</html>
