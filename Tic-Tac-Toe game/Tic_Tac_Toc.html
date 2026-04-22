@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>টিক-ট্যাক-টো</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f5f5f5; }
+    .container { padding: 2rem; background: white; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto; }
+    .cell { width: 90px; height: 90px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 12px; cursor: pointer; font-size: 40px; font-weight: 500; display: flex; align-items: center; justify-content: center; transition: background 0.15s; user-select: none; }
+    .cell:hover:not(.taken) { background: #e8e8e8; }
+    .cell.taken { cursor: default; }
+    .cell.x-mark { color: #185FA5; }
+    .cell.o-mark { color: #993C1D; }
+    .cell.win-cell { background: #dbeeff; }
+    .status { text-align: center; font-size: 16px; color: #666; margin-bottom: 1rem; min-height: 24px; }
+    .score-row { display: flex; justify-content: center; gap: 24px; margin-bottom: 1.5rem; }
+    .score-box { text-align: center; padding: 8px 20px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; min-width: 70px; }
+    .score-label { font-size: 12px; color: #888; }
+    .score-num { font-size: 22px; font-weight: 500; }
+    .x-color { color: #185FA5; }
+    .o-color { color: #993C1D; }
+    .draw-color { color: #888; }
+    .reset-btn { display: block; margin: 1.5rem auto 0; padding: 8px 28px; border: 1px solid #ccc; border-radius: 8px; background: transparent; color: #333; font-size: 14px; cursor: pointer; }
+    .reset-btn:hover { background: #f0f0f0; }
+    .turn-indicator { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1rem; }
+    .turn-dot { width: 10px; height: 10px; border-radius: 50%; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="padding: 1.5rem 0;">
+      <div class="score-row">
+        <div class="score-box">
+          <div class="score-label">খেলোয়াড় ✕</div>
+          <div class="score-num x-color" id="score-x">0</div>
+        </div>
+        <div class="score-box">
+          <div class="score-label">ড্র</div>
+          <div class="score-num draw-color" id="score-d">0</div>
+        </div>
+        <div class="score-box">
+          <div class="score-label">খেলোয়াড় ○</div>
+          <div class="score-num o-color" id="score-o">0</div>
+        </div>
+      </div>
+
+      <div class="turn-indicator" id="turn-indicator"></div>
+      <div class="status" id="status"></div>
+
+      <div class="board" id="board">
+        <div class="cell" data-i="0"></div>
+        <div class="cell" data-i="1"></div>
+        <div class="cell" data-i="2"></div>
+        <div class="cell" data-i="3"></div>
+        <div class="cell" data-i="4"></div>
+        <div class="cell" data-i="5"></div>
+        <div class="cell" data-i="6"></div>
+        <div class="cell" data-i="7"></div>
+        <div class="cell" data-i="8"></div>
+      </div>
+
+      <button class="reset-btn" id="reset-btn">নতুন খেলা</button>
+    </div>
+  </div>
+
+  <script>
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    let board = Array(9).fill(null);
+    let current = 'X';
+    let over = false;
+    let scores = { X: 0, O: 0, D: 0 };
+
+    const cells = document.querySelectorAll('.cell');
+    const statusEl = document.getElementById('status');
+    const turnEl = document.getElementById('turn-indicator');
+
+    function checkWin(b, p) {
+      return wins.find(w => w.every(i => b[i] === p));
+    }
+
+    function updateTurnUI() {
+      if (over) { turnEl.innerHTML = ''; return; }
+      const color = current === 'X' ? '#185FA5' : '#993C1D';
+      const sym = current === 'X' ? '✕' : '○';
+      turnEl.innerHTML = `<div class="turn-dot" style="background:${color};"></div>
+        <span style="font-size:14px; color:#666;">খেলোয়াড় ${sym}-এর পালা</span>`;
+    }
+
+    function render() {
+      cells.forEach((cell, i) => {
+        cell.textContent = board[i] === 'X' ? '✕' : board[i] === 'O' ? '○' : '';
+        cell.className = 'cell' + (board[i] ? ' taken ' + (board[i] === 'X' ? 'x-mark' : 'o-mark') : '');
+      });
+      document.getElementById('score-x').textContent = scores.X;
+      document.getElementById('score-o').textContent = scores.O;
+      document.getElementById('score-d').textContent = scores.D;
+    }
+
+    cells.forEach(cell => {
+      cell.addEventListener('click', () => {
+        const i = +cell.dataset.i;
+        if (board[i] || over) return;
+        board[i] = current;
+        render();
+
+        const winLine = checkWin(board, current);
+        if (winLine) {
+          winLine.forEach(idx => cells[idx].classList.add('win-cell'));
+          const sym = current === 'X' ? '✕' : '○';
+          statusEl.textContent = `খেলোয়াড় ${sym} জিতেছে!`;
+          statusEl.style.color = current === 'X' ? '#185FA5' : '#993C1D';
+          scores[current]++;
+          document.getElementById(current === 'X' ? 'score-x' : 'score-o').textContent = scores[current];
+          over = true;
+          turnEl.innerHTML = '';
+        } else if (board.every(Boolean)) {
+          statusEl.textContent = 'ড্র! কেউ জেতেনি।';
+          statusEl.style.color = '#888';
+          scores.D++;
+          document.getElementById('score-d').textContent = scores.D;
+          over = true;
+          turnEl.innerHTML = '';
+        } else {
+          current = current === 'X' ? 'O' : 'X';
+          updateTurnUI();
+        }
+      });
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      board = Array(9).fill(null);
+      current = 'X';
+      over = false;
+      statusEl.textContent = '';
+      statusEl.style.color = '';
+      render();
+      updateTurnUI();
+    });
+
+    render();
+    updateTurnUI();
+  </script>
+</body>
+</html>
