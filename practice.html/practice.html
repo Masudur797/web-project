@@ -1,316 +1,147 @@
-<!DOCTYPE html>
-<html lang="ur">
+!DOCTYPE html>
+<html lang="bn">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bike Racing Game</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0d0221;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    font-family: 'Courier New', monospace;
-    color: #fff;
-  }
-  h1 {
-    font-size: 2rem;
-    color: #e94560;
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    text-shadow: 0 0 20px #e94560;
-  }
-  #ui {
-    display: flex;
-    gap: 40px;
-    margin-bottom: 10px;
-    font-size: 16px;
-    letter-spacing: 2px;
-  }
-  .stat { color: #aaa; }
-  .stat span { color: #e94560; font-weight: bold; }
-  canvas {
-    display: block;
-    border: 2px solid #e94560;
-    border-radius: 8px;
-    box-shadow: 0 0 30px rgba(233,69,96,0.4);
-  }
-  #msg {
-    margin-top: 10px;
-    font-size: 13px;
-    color: #666;
-    letter-spacing: 1px;
-  }
-  #startBtn {
-    margin-top: 14px;
-    padding: 10px 36px;
-    font-size: 16px;
-    letter-spacing: 3px;
-    cursor: pointer;
-    border: 2px solid #e94560;
-    background: transparent;
-    color: #e94560;
-    font-family: 'Courier New', monospace;
-    text-transform: uppercase;
-    border-radius: 4px;
-    transition: all 0.2s;
-  }
-  #startBtn:hover {
-    background: #e94560;
-    color: #fff;
-    box-shadow: 0 0 20px rgba(233,69,96,0.6);
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>টিক-ট্যাক-টো</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f5f5f5; }
+    .container { padding: 2rem; background: white; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
+    .board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto; }
+    .cell { width: 90px; height: 90px; background: #f0f0f0; border: 1px solid #ddd; border-radius: 12px; cursor: pointer; font-size: 40px; font-weight: 500; display: flex; align-items: center; justify-content: center; transition: background 0.15s; user-select: none; }
+    .cell:hover:not(.taken) { background: #e8e8e8; }
+    .cell.taken { cursor: default; }
+    .cell.x-mark { color: #185FA5; }
+    .cell.o-mark { color: #993C1D; }
+    .cell.win-cell { background: #dbeeff; }
+    .status { text-align: center; font-size: 16px; color: #666; margin-bottom: 1rem; min-height: 24px; }
+    .score-row { display: flex; justify-content: center; gap: 24px; margin-bottom: 1.5rem; }
+    .score-box { text-align: center; padding: 8px 20px; border: 1px solid #eee; border-radius: 8px; background: #fafafa; min-width: 70px; }
+    .score-label { font-size: 12px; color: #888; }
+    .score-num { font-size: 22px; font-weight: 500; }
+    .x-color { color: #185FA5; }
+    .o-color { color: #993C1D; }
+    .draw-color { color: #888; }
+    .reset-btn { display: block; margin: 1.5rem auto 0; padding: 8px 28px; border: 1px solid #ccc; border-radius: 8px; background: transparent; color: #333; font-size: 14px; cursor: pointer; }
+    .reset-btn:hover { background: #f0f0f0; }
+    .turn-indicator { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1rem; }
+    .turn-dot { width: 10px; height: 10px; border-radius: 50%; }
+  </style>
 </head>
 <body>
+  <div class="container">
+    <div style="padding: 1.5rem 0;">
+      <div class="score-row">
+        <div class="score-box">
+          <div class="score-label">খেলোয়াড় ✕</div>
+          <div class="score-num x-color" id="score-x">0</div>
+        </div>
+        <div class="score-box">
+          <div class="score-label">ড্র</div>
+          <div class="score-num draw-color" id="score-d">0</div>
+        </div>
+        <div class="score-box">
+          <div class="score-label">খেলোয়াড় ○</div>
+          <div class="score-num o-color" id="score-o">0</div>
+        </div>
+      </div>
 
-<h1>🏍 Bike Racing</h1>
+      <div class="turn-indicator" id="turn-indicator"></div>
+      <div class="status" id="status"></div>
 
-<div id="ui">
-  <div class="stat">Score: <span id="score">0</span></div>
-  <div class="stat">Speed: <span id="speed">0</span> km/h</div>
-  <div class="stat">Lives: <span id="lives">3</span></div>
-</div>
+      <div class="board" id="board">
+        <div class="cell" data-i="0"></div>
+        <div class="cell" data-i="1"></div>
+        <div class="cell" data-i="2"></div>
+        <div class="cell" data-i="3"></div>
+        <div class="cell" data-i="4"></div>
+        <div class="cell" data-i="5"></div>
+        <div class="cell" data-i="6"></div>
+        <div class="cell" data-i="7"></div>
+        <div class="cell" data-i="8"></div>
+      </div>
 
-<canvas id="gameCanvas" width="600" height="300"></canvas>
-<div id="msg">← → keys ya A/D se lane badlo | Space/↑ se jump karo</div>
-<button id="startBtn">▶ Game Shuru Karo</button>
+      <button class="reset-btn" id="reset-btn">নতুন খেলা</button>
+    </div>
+  </div>
 
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+  <script>
+    const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+    let board = Array(9).fill(null);
+    let current = 'X';
+    let over = false;
+    let scores = { X: 0, O: 0, D: 0 };
 
-let gameState = 'idle';
-let score = 0, lives = 3, speed = 60, frame = 0;
-let roadOffset = 0;
-let obstacles = [];
-let particles = [];
-let invincible = 0;
+    const cells = document.querySelectorAll('.cell');
+    const statusEl = document.getElementById('status');
+    const turnEl = document.getElementById('turn-indicator');
 
-const bike = { x: 120, y: 220, w: 54, h: 30, vy: 0, onGround: true, lane: 1 };
-const LANES = [160, 215, 260];
-const GRAVITY = 0.7, JUMP = -12;
-
-function drawRoad() {
-  ctx.fillStyle = '#16213e';
-  ctx.fillRect(0, 130, 600, 170);
-  ctx.fillStyle = '#0f3460';
-  ctx.fillRect(0, 128, 600, 4);
-  ctx.fillStyle = '#e94560';
-  ctx.fillRect(0, 292, 600, 4);
-  for (let i = 0; i < 7; i++) {
-    let x = ((i * 100) - (roadOffset % 100));
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.fillRect(x, 214, 60, 3);
-    ctx.fillRect(x, 258, 60, 3);
-  }
-}
-
-function drawSky() {
-  const grad = ctx.createLinearGradient(0, 0, 0, 130);
-  grad.addColorStop(0, '#0d0221');
-  grad.addColorStop(1, '#16213e');
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, 600, 130);
-  [30,90,160,250,350,450,530,570].forEach((sx,i) => {
-    ctx.fillStyle = `rgba(255,255,255,${0.4 + (i % 3) * 0.2})`;
-    ctx.beginPath();
-    ctx.arc(sx, 20 + (i%4)*22, 1.5, 0, Math.PI*2);
-    ctx.fill();
-  });
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(500, 40, 28, Math.PI, 2 * Math.PI);
-  ctx.fillStyle = '#e94560';
-  ctx.fill();
-  for (let i = 1; i <= 6; i++) {
-    ctx.beginPath();
-    ctx.arc(500, 40, 28 + i * 8, Math.PI, 2 * Math.PI);
-    ctx.strokeStyle = `rgba(233,69,96,${0.15 - i * 0.02})`;
-    ctx.lineWidth = 3;
-    ctx.stroke();
-  }
-  ctx.restore();
-  const bx = (roadOffset * 0.4) % 700 - 100;
-  ctx.fillStyle = '#1a1a4e';
-  ctx.beginPath(); ctx.moveTo(bx, 130); ctx.lineTo(bx+40, 80); ctx.lineTo(bx+80, 130); ctx.fill();
-  ctx.beginPath(); ctx.moveTo(bx+60, 130); ctx.lineTo(bx+100, 70); ctx.lineTo(bx+140, 130); ctx.fill();
-}
-
-function roundRect(x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
-function drawBike(b) {
-  if (invincible > 0 && Math.floor(invincible / 4) % 2 === 0) return;
-  const x = b.x, y = b.y;
-  ctx.save();
-  ctx.shadowColor = '#e94560'; ctx.shadowBlur = 8;
-  ctx.fillStyle = '#e94560';
-  roundRect(x+4, y+2, 40, 16, 4); ctx.fill();
-  ctx.fillStyle = '#ff6b6b';
-  roundRect(x+24, y-2, 20, 12, 3); ctx.fill();
-  ctx.fillStyle = '#c0392b';
-  roundRect(x+4, y+14, 40, 6, 2); ctx.fill();
-  ctx.shadowBlur = 0;
-  [[x+8,y+22],[x+40,y+22]].forEach(([cx,cy]) => {
-    ctx.fillStyle = '#333';
-    ctx.beginPath(); ctx.arc(cx, cy, 8, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#555';
-    ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI*2); ctx.fill();
-  });
-  ctx.fillStyle = 'rgba(233,69,96,0.6)';
-  ctx.beginPath(); ctx.ellipse(x+2, y+18, 12, 4, 0, 0, Math.PI*2); ctx.fill();
-  ctx.restore();
-}
-
-function drawObstacle(o) {
-  ctx.save();
-  ctx.shadowColor = '#f39c12'; ctx.shadowBlur = 6;
-  ctx.fillStyle = '#f39c12';
-  roundRect(o.x, o.y, o.w, o.h, 4); ctx.fill();
-  ctx.fillStyle = '#e67e22';
-  ctx.fillRect(o.x+4, o.y+4, o.w-8, o.h/2);
-  ctx.fillStyle = '#e74c3c';
-  roundRect(o.x+6, o.y-6, 8, 8, 2); ctx.fill();
-  ctx.fillStyle = '#c0392b';
-  ctx.fillRect(o.x+8, o.y-8, 4, 4);
-  ctx.restore();
-}
-
-function drawParticles() {
-  particles = particles.filter(p => p.life > 0);
-  particles.forEach(p => {
-    ctx.globalAlpha = p.life / 30;
-    ctx.fillStyle = p.color;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
-    p.x += p.vx; p.y += p.vy; p.life--;
-  });
-  ctx.globalAlpha = 1;
-}
-
-function spawnParticles(x, y, color) {
-  for (let i = 0; i < 12; i++) {
-    particles.push({ x, y, vx: (Math.random()-0.5)*5, vy: (Math.random()-0.5)*5, r: Math.random()*4+1, color, life: 30 });
-  }
-}
-
-function spawnObstacle() {
-  const lane = Math.floor(Math.random() * 3);
-  obstacles.push({ x: 620, y: LANES[lane] - 20, w: 28, h: 24, lane });
-}
-
-function updateBike() {
-  if (!bike.onGround) { bike.vy += GRAVITY; bike.y += bike.vy; }
-  const ground = LANES[bike.lane] - bike.h + 8;
-  if (bike.y >= ground) { bike.y = ground; bike.vy = 0; bike.onGround = true; }
-}
-
-function checkCollision() {
-  obstacles.forEach((o, i) => {
-    if (o.lane !== bike.lane) return;
-    if (!bike.onGround) return;
-    const bx1 = bike.x+6, bx2 = bike.x+bike.w-6;
-    const by1 = bike.y+4, by2 = bike.y+bike.h;
-    if (bx2 > o.x+4 && bx1 < o.x+o.w-4 && by2 > o.y+2 && by1 < o.y+o.h) {
-      if (invincible > 0) return;
-      spawnParticles(o.x+o.w/2, o.y, '#f39c12');
-      obstacles.splice(i, 1);
-      lives--;
-      invincible = 90;
-      document.getElementById('lives').textContent = lives;
-      if (lives <= 0) endGame();
+    function checkWin(b, p) {
+      return wins.find(w => w.every(i => b[i] === p));
     }
-  });
-}
 
-function endGame() {
-  gameState = 'dead';
-  document.getElementById('startBtn').textContent = '↺ Phir Khelna';
-  document.getElementById('startBtn').style.display = 'block';
-  document.getElementById('msg').textContent = `Game Over! Score: ${score} — Dobara kheloge?`;
-}
+    function updateTurnUI() {
+      if (over) { turnEl.innerHTML = ''; return; }
+      const color = current === 'X' ? '#185FA5' : '#993C1D';
+      const sym = current === 'X' ? '✕' : '○';
+      turnEl.innerHTML = `<div class="turn-dot" style="background:${color};"></div>
+        <span style="font-size:14px; color:#666;">খেলোয়াড় ${sym}-এর পালা</span>`;
+    }
 
-document.addEventListener('keydown', e => {
-  if ([' ','ArrowLeft','ArrowRight','ArrowUp','a','d','w','A','D','W'].includes(e.key)) e.preventDefault();
-  if (gameState !== 'playing') return;
-  if ([' ','ArrowUp','w','W'].includes(e.key) && bike.onGround) {
-    bike.vy = JUMP; bike.onGround = false;
-    spawnParticles(bike.x+27, bike.y+bike.h, '#e94560');
-  }
-  if (['ArrowLeft','a','A'].includes(e.key) && bike.lane > 0) {
-    bike.lane--; bike.y = LANES[bike.lane] - bike.h + 8;
-  }
-  if (['ArrowRight','d','D'].includes(e.key) && bike.lane < 2) {
-    bike.lane++; bike.y = LANES[bike.lane] - bike.h + 8;
-  }
-});
+    function render() {
+      cells.forEach((cell, i) => {
+        cell.textContent = board[i] === 'X' ? '✕' : board[i] === 'O' ? '○' : '';
+        cell.className = 'cell' + (board[i] ? ' taken ' + (board[i] === 'X' ? 'x-mark' : 'o-mark') : '');
+      });
+      document.getElementById('score-x').textContent = scores.X;
+      document.getElementById('score-o').textContent = scores.O;
+      document.getElementById('score-d').textContent = scores.D;
+    }
 
-let lastObstacle = 0;
+    cells.forEach(cell => {
+      cell.addEventListener('click', () => {
+        const i = +cell.dataset.i;
+        if (board[i] || over) return;
+        board[i] = current;
+        render();
 
-function gameLoop() {
-  if (gameState !== 'playing') return;
-  ctx.clearRect(0, 0, 600, 300);
-  frame++;
-  roadOffset += speed / 60;
-  speed = Math.min(180, 60 + score * 0.3);
-  document.getElementById('speed').textContent = Math.round(speed);
-  drawSky();
-  drawRoad();
-  if (frame - lastObstacle > Math.max(40, 100 - score/10)) {
-    spawnObstacle(); lastObstacle = frame;
-  }
-  obstacles = obstacles.filter(o => o.x > -60);
-  obstacles.forEach(o => { o.x -= speed / 60; drawObstacle(o); });
-  updateBike();
-  checkCollision();
-  drawBike(bike);
-  drawParticles();
-  if (invincible > 0) invincible--;
-  score++;
-  document.getElementById('score').textContent = score;
-  requestAnimationFrame(gameLoop);
-}
+        const winLine = checkWin(board, current);
+        if (winLine) {
+          winLine.forEach(idx => cells[idx].classList.add('win-cell'));
+          const sym = current === 'X' ? '✕' : '○';
+          statusEl.textContent = `খেলোয়াড় ${sym} জিতেছে!`;
+          statusEl.style.color = current === 'X' ? '#185FA5' : '#993C1D';
+          scores[current]++;
+          document.getElementById(current === 'X' ? 'score-x' : 'score-o').textContent = scores[current];
+          over = true;
+          turnEl.innerHTML = '';
+        } else if (board.every(Boolean)) {
+          statusEl.textContent = 'ড্র! কেউ জেতেনি।';
+          statusEl.style.color = '#888';
+          scores.D++;
+          document.getElementById('score-d').textContent = scores.D;
+          over = true;
+          turnEl.innerHTML = '';
+        } else {
+          current = current === 'X' ? 'O' : 'X';
+          updateTurnUI();
+        }
+      });
+    });
 
-function startGame() {
-  score = 0; lives = 3; speed = 60; frame = 0;
-  roadOffset = 0; obstacles = []; particles = []; invincible = 0;
-  bike.lane = 1; bike.y = LANES[1] - bike.h + 8; bike.vy = 0; bike.onGround = true;
-  document.getElementById('score').textContent = '0';
-  document.getElementById('speed').textContent = '0';
-  document.getElementById('lives').textContent = '3';
-  document.getElementById('startBtn').style.display = 'none';
-  document.getElementById('msg').textContent = '← → se lane change | Space/↑ se jump karo';
-  gameState = 'playing';
-  gameLoop();
-}
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      board = Array(9).fill(null);
+      current = 'X';
+      over = false;
+      statusEl.textContent = '';
+      statusEl.style.color = '';
+      render();
+      updateTurnUI();
+    });
 
-document.getElementById('startBtn').addEventListener('click', startGame);
-
-// Initial render
-ctx.clearRect(0,0,600,300);
-drawSky(); drawRoad(); drawBike(bike);
-ctx.fillStyle = 'rgba(255,255,255,0.85)';
-ctx.font = 'bold 26px Courier New';
-ctx.textAlign = 'center';
-ctx.fillText('BIKE RACING', 300, 185);
-ctx.font = '14px Courier New';
-ctx.fillStyle = 'rgba(255,255,255,0.4)';
-ctx.fillText('Neeche button dabao shuru karne ke liye', 300, 215);
-</script>
+    render();
+    updateTurnUI();
+  </script>
 </body>
 </html>
