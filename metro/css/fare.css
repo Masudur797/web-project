@@ -1,0 +1,111 @@
+/* fare.css */
+
+/* Base reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #004aad 0%, #00a6ff 100%);
+  min-height: 100vh;
+  padding: 20px;
+  color: #111827;
+}
+
+/* Page title */
+h2 {
+  text-align: center;
+  color: #f9fafb;
+  margin-bottom: 8px;
+}
+
+body > p a {
+  color: #e5f2ff;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+body > p {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+/* Centered card */
+form {
+  max-width: 420px;
+  margin: 0 auto;
+  background: #ffffff;
+  padding: 20px 22px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+label {
+  font-size: 14px;
+  color: #374151;
+}
+
+select,
+input[type="date"] {
+  width: 100%;
+  margin-top: 4px;
+  margin-bottom: 14px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd2e1;
+  font-size: 14px;
+  background: #f9fafb;
+}
+
+/* Button */
+button {
+  width: 100%;
+  padding: 9px 10px;
+  background: #004aad;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+
+button:hover {
+  background: #003580;
+}
+
+/* Message area */
+body > p:last-of-type,
+body > p.msg {
+  margin-top: 10px;
+}
+
+/* Result message from PHP */
+body > p:not(:first-of-type) {
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Optional: success/error color if তুমি class দাও */
+.success {
+  color: #047857;
+  font-weight: 600;
+}
+
+.error {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+/* Small screens */
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+  form {
+    padding: 16px 18px;
+  }
+}

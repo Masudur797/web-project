@@ -1,0 +1,85 @@
+/* station.css */
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f4f4f9;
+  color: #111827;
+}
+
+/* Header */
+header {
+  background: #004aad;
+  color: #f9fafb;
+  padding: 18px 15px;
+}
+
+.header-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.header-container h1 {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.header-container p {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Main */
+main {
+  max-width: 1000px;
+  margin: 20px auto 30px;
+  padding: 0 15px;
+}
+
+/* Stations grid */
+.stations-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 15px;
+}
+
+/* Station card */
+.station-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  border-left: 4px solid #004aad;
+}
+
+.station-card h2 {
+  font-size: 18px;
+  color: #004aad;
+  margin-bottom: 6px;
+}
+
+.location,
+.details,
+.distance {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.distance strong {
+  color: #111827;
+}
+
+/* Small screens */
+@media (max-width: 600px) {
+  .header-container h1 {
+    font-size: 20px;
+  }
+}

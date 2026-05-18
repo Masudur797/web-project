@@ -1,0 +1,72 @@
+/* passenger_register.css */
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+form {
+  background: #ffffff;
+  padding: 25px 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  width: 320px;
+  text-align: center;
+}
+
+form h2 {
+  margin-bottom: 15px;
+  color: #004aad;
+}
+
+form .msg {
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #d00000;
+}
+
+form input {
+  width: 100%;
+  padding: 8px 10px;
+  margin: 6px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+form button {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 10px;
+  background: #004aad;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+form button:hover {
+  background: #003580;
+}
+
+form p {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+form a {
+  color: #004aad;
+  text-decoration: none;
+}
+
+form a:hover {
+  text-decoration: underline;
+}
