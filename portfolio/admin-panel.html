@@ -1,0 +1,688 @@
+<?php
+// ==================== ADMIN MESSAGES PANEL ====================
+ 
+require_once 'config.php';
+ 
+// Check if logged in (simple authentication)
+session_start();
+ 
+if (!isset($_SESSION['admin_logged_in'])) {
+    // Simple login
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $username = $_POST['username'] ?? '';
+        $password = $_POST['password'] ?? '';
+        
+        // Simple authentication (use proper auth in production!)
+        if ($username === 'admin' && $password === 'admin123') {
+            $_SESSION['admin_logged_in'] = true;
+            header('Location: ' . $_SERVER['PHP_SELF']);
+            exit;
+        } else {
+            $login_error = 'Invalid credentials';
+        }
+    }
+    
+    // Login form
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Admin Login</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+            
+            body {
+                font-family: 'Courier New', monospace;
+                background: linear-gradient(135deg, #0a0e27 0%, #16213e 100%);
+                color: #e0e0e0;
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .login-container {
+                background-color: #05060e;
+                border: 2px solid #00ff41;
+                padding: 3rem;
+                width: 100%;
+                max-width: 400px;
+                text-align: center;
+            }
+            
+            .login-container h1 {
+                color: #00ff41;
+                margin-bottom: 2rem;
+                text-shadow: 0 0 10px #00ff41;
+            }
+            
+            .form-group {
+                margin-bottom: 1.5rem;
+                text-align: left;
+            }
+            
+            .form-group label {
+                display: block;
+                color: #e0e0e0;
+                margin-bottom: 0.5rem;
+                text-transform: uppercase;
+                font-size: 0.9rem;
+            }
+            
+            .form-group input {
+                width: 100%;
+                padding: 0.8rem;
+                background-color: #16213e;
+                border: 1px solid #1a1a2e;
+                color: #e0e0e0;
+                font-family: 'Courier New', monospace;
+            }
+            
+            .form-group input:focus {
+                outline: none;
+                border-color: #00ff41;
+                box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+            }
+            
+            .login-btn {
+                width: 100%;
+                padding: 0.8rem;
+                background-color: #00ff41;
+                color: #0a0e27;
+                border: none;
+                font-family: 'Courier New', monospace;
+                font-weight: bold;
+                text-transform: uppercase;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            
+            .login-btn:hover {
+                box-shadow: 0 0 20px #00ff41;
+                transform: scale(1.02);
+            }
+            
+            .error {
+                color: #ff4444;
+                margin-bottom: 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="login-container">
+            <h1>[ADMIN LOGIN]</h1>
+            
+            <?php if (isset($login_error)): ?>
+                <p class="error">✗ <?php echo $login_error; ?></p>
+            <?php endif; ?>
+            
+            <form method="POST">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" placeholder="admin" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" name="password" placeholder="••••••••" required>
+                </div>
+                
+                <button type="submit" class="login-btn">[Login]</button>
+            </form>
+            
+            <p style="margin-top: 2rem; color: #888888; font-size: 0.85rem;">
+                Demo: admin / admin123
+            </p>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+ 
+// ==================== GET DATA FROM DATABASE ====================
+ 
+// Get all messages
+$messages = [];
+$result = $conn->query("SELECT * FROM contact_messages ORDER BY created_at DESC");
+if ($result) {
+    $messages = $result->fetch_all(MYSQLI_ASSOC);
+}
+ 
+// Get statistics
+$total_messages = count($messages);
+$unread_messages = 0;
+$total_projects = 0;
+ 
+foreach ($messages as $msg) {
+    if (!$msg['is_read']) {
+        $unread_messages++;
+    }
+}
+ 
+$stats_result = $conn->query("SELECT COUNT(*) as count FROM projects");
+if ($stats_result) {
+    $stats = $stats_result->fetch_assoc();
+    $total_projects = $stats['count'];
+}
+ 
+// Handle mark as read
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
+    $action = $_POST['action'];
+    
+    if ($action === 'mark_read' && isset($_POST['message_id'])) {
+        $id = (int)$_POST['message_id'];
+        $conn->query("UPDATE contact_messages SET is_read = 1 WHERE id = $id");
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }
+    
+    if ($action === 'delete' && isset($_POST['message_id'])) {
+        $id = (int)$_POST['message_id'];
+        $conn->query("DELETE FROM contact_messages WHERE id = $id");
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }
+}
+ 
+// Handle logout
+if (isset($_GET['logout'])) {
+    session_destroy();
+    header('Location: ' . $_SERVER['PHP_SELF']);
+    exit;
+}
+ 
+?>
+ 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Messages</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+ 
+        :root {
+            --primary-color: #00ff41;
+            --bg-dark: #0a0e27;
+            --bg-darker: #05060e;
+            --text-primary: #e0e0e0;
+            --text-secondary: #888888;
+            --border-color: #1a1a2e;
+        }
+ 
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+ 
+        .admin-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+ 
+        /* ==================== SIDEBAR ==================== */
+        .sidebar {
+            background-color: var(--bg-darker);
+            border-right: 2px dashed var(--border-color);
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+ 
+        .sidebar-logo {
+            padding: 1.5rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            text-align: center;
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+ 
+        .sidebar-menu {
+            list-style: none;
+        }
+ 
+        .sidebar-item {
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+ 
+        .sidebar-item a {
+            display: block;
+            color: var(--text-primary);
+            text-decoration: none;
+            padding: 1rem 1.5rem;
+        }
+ 
+        .sidebar-item a:hover,
+        .sidebar-item.active a {
+            color: var(--primary-color);
+            background-color: #16213e;
+            border-left-color: var(--primary-color);
+        }
+ 
+        .logout-link {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+ 
+        /* ==================== MAIN CONTENT ==================== */
+        .main-content {
+            padding: 2rem;
+        }
+ 
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px dashed var(--border-color);
+        }
+ 
+        .header h1 {
+            color: var(--primary-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+ 
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+ 
+        .logout-btn:hover {
+            background-color: var(--primary-color);
+            color: var(--bg-dark);
+        }
+ 
+        /* ==================== STATS ==================== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+ 
+        .stat-card {
+            background-color: #16213e;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 5px;
+        }
+ 
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+ 
+        .stat-value {
+            font-size: 2rem;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+ 
+        /* ==================== SECTION ==================== */
+        .section {
+            background-color: #16213e;
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-radius: 5px;
+        }
+ 
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+ 
+        /* ==================== TABLE ==================== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+ 
+        table th {
+            background-color: var(--bg-darker);
+            color: var(--primary-color);
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px dashed var(--border-color);
+            font-weight: bold;
+        }
+ 
+        table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+ 
+        table tr:hover {
+            background-color: #16213e;
+        }
+ 
+        .unread {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+ 
+        .message-text {
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-secondary);
+        }
+ 
+        /* ==================== ACTIONS ==================== */
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+ 
+        .btn {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--primary-color);
+            background-color: transparent;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+ 
+        .btn:hover {
+            background-color: var(--primary-color);
+            color: var(--bg-dark);
+        }
+ 
+        .btn.delete {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+ 
+        .btn.delete:hover {
+            background-color: #ff4444;
+            color: white;
+        }
+ 
+        /* ==================== MODAL ==================== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+ 
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+ 
+        .modal-content {
+            background-color: var(--bg-dark);
+            border: 2px solid var(--primary-color);
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            border-radius: 5px;
+        }
+ 
+        .modal-header {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+ 
+        .close {
+            float: right;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+ 
+        .close:hover {
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+ 
+        .modal-body {
+            margin-bottom: 1.5rem;
+        }
+ 
+        .modal-body p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+ 
+        .modal-body strong {
+            color: var(--text-primary);
+        }
+ 
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+ 
+        /* ==================== EMPTY STATE ==================== */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+ 
+        .empty-state p {
+            font-size: 1rem;
+        }
+ 
+        /* ==================== RESPONSIVE ==================== */
+        @media (max-width: 768px) {
+            .admin-container {
+                grid-template-columns: 1fr;
+            }
+ 
+            .sidebar {
+                position: fixed;
+                left: -250px;
+                z-index: 999;
+                height: auto;
+            }
+ 
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+ 
+            table {
+                font-size: 0.85rem;
+            }
+ 
+            .message-text {
+                max-width: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">[ADMIN]</div>
+            <ul class="sidebar-menu">
+                <li class="sidebar-item active">
+                    <a href="#">Messages</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#">Projects</a>
+                </li>
+                <li class="sidebar-item">
+                    <a href="#">Settings</a>
+                </li>
+            </ul>
+            
+            <div class="sidebar-item logout-link">
+                <a href="?logout=1">Logout</a>
+            </div>
+        </aside>
+ 
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <h1>Messages Dashboard</h1>
+                <a href="?logout=1" class="logout-btn">Logout</a>
+            </div>
+ 
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Messages</div>
+                    <div class="stat-value"><?php echo $total_messages; ?></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Unread Messages</div>
+                    <div class="stat-value"><?php echo $unread_messages; ?></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Projects</div>
+                    <div class="stat-value"><?php echo $total_projects; ?></div>
+                </div>
+            </div>
+ 
+            <!-- Messages Section -->
+            <div class="section">
+                <h2>Contact Messages</h2>
+ 
+                <?php if (empty($messages)): ?>
+                    <div class="empty-state">
+                        <p>No messages yet</p>
+                    </div>
+                <?php else: ?>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Message</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($messages as $msg): ?>
+                                <tr <?php echo !$msg['is_read'] ? 'style="background-color: #1a2f4d;"' : ''; ?>>
+                                    <td><?php echo htmlspecialchars($msg['name']); ?></td>
+                                    <td><?php echo htmlspecialchars($msg['email']); ?></td>
+                                    <td class="message-text"><?php echo htmlspecialchars($msg['message']); ?></td>
+                                    <td><?php echo date('M d, Y', strtotime($msg['created_at'])); ?></td>
+                                    <td>
+                                        <?php if ($msg['is_read']): ?>
+                                            <span style="color: var(--text-secondary);">Read</span>
+                                        <?php else: ?>
+                                            <span class="unread">Unread</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="actions">
+                                        <button class="btn" onclick="viewMessage(<?php echo $msg['id']; ?>, '<?php echo htmlspecialchars(addslashes($msg['name'])); ?>', '<?php echo htmlspecialchars(addslashes($msg['email'])); ?>', '<?php echo htmlspecialchars(addslashes($msg['message'])); ?>')">
+                                            View
+                                        </button>
+                                        <form method="POST" style="display: inline;">
+                                            <input type="hidden" name="action" value="mark_read">
+                                            <input type="hidden" name="message_id" value="<?php echo $msg['id']; ?>">
+                                            <button type="submit" class="btn" style="display: <?php echo $msg['is_read'] ? 'none' : 'block'; ?>">
+                                                Mark Read
+                                            </button>
+                                        </form>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Delete this message?');">
+                                            <input type="hidden" name="action" value="delete">
+                                            <input type="hidden" name="message_id" value="<?php echo $msg['id']; ?>">
+                                            <button type="submit" class="btn delete">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+        </main>
+    </div>
+ 
+    <!-- Message Modal -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div class="modal-header">
+                <h2 id="modalTitle">Message Details</h2>
+            </div>
+            <div class="modal-body">
+                <p><strong>Name:</strong> <span id="modalName"></span></p>
+                <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+                <p><strong>Message:</strong></p>
+                <p id="modalMessage" style="background-color: #16213e; padding: 1rem; border-radius: 5px; white-space: pre-wrap;"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">Close</button>
+                <a id="replyLink" href="#" class="btn" style="text-decoration: none;">Reply</a>
+            </div>
+        </div>
+    </div>
+ 
+    <script>
+        function viewMessage(id, name, email, message) {
+            document.getElementById('modalName').textContent = name;
+            document.getElementById('modalEmail').textContent = email;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('replyLink').href = 'mailto:' + email;
+            document.getElementById('messageModal').classList.add('show');
+        }
+ 
+        function closeModal() {
+            document.getElementById('messageModal').classList.remove('show');
+        }
+ 
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            let modal = document.getElementById('messageModal');
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>
+ 
